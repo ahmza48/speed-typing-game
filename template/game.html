@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/game.css">
+    <title>The Game</title>
+</head>
+<body>
+    <div id="main">
+        <section class="section-1">
+            <div class="head">
+                <h3>Name: {{name}}</h3>
+                <h3>Best Score: <span id="best-score">{{maxscore}}</span></h3>
+            </div>
+            <div class="main-box">
+                <div class="main-heading">
+                    <h2 class="game-heading">Speed Typer</h2>
+                </div>
+                <div class="info">
+                    <h3>Time Left: <span id="timer"></span></h3>
+                    <h3>Score: <span id="curr-score"></span></h3>
+                </div>
+                <div class="sub-heading">
+                    <h3>Type the Following Word</h3>
+                </div>
+                <div class="word-space">
+                    <h3 id="random-word">{{word}}</h3>
+                </div>
+                <div class="input">
+                    <input id="input-word" autofocus type="text" name="word" id="name">
+                </div>        
+                <div class="output">
+                    OUPTPUT<span class="outputResult" id="outputResult"></span>
+                </div>
+            </div>    
+        </section>
+ 
+    </div>
+    <div class="exit">
+        <p><a href="/logout">EXIT GAME</a></p>
+    </div>
+
+    <script>
+
+        random_words_list = ["appraise", "arbitrary", "ambiguous", "alliteration",
+        "abstract", "aberration", "acquiesce", "acumen", "advocate",
+        "adamant", "aesthetic", "aegis", "affinity", "affluent", "agnostic",
+        "agile", "aisle", "ajar", "akimbo", "allusion", "allegory",
+        "ambiguity", "ambivalent", "antagonist", "anecdote", "analogy",
+        "aorta", "apathy", "apprehensive", "aqueous", "articulate", "arduous",
+        "assonance", "attrition", "autonomy", "auspicious", "avarice",
+        "aversion", "awry", "awe", "axiom", "azure", "bane", "banal",
+        "benevolent", "belligerent", "benign", "bias", "bigot", "boisterous",
+        "bourgeois", "bureaucracy", "burden", "capricious", "cacophony",
+        "capitalism", "censure", "cessation", "stopping", "circumspect",
+        "circumvent", "cite", "connotation", "communism", "condescending",
+        "contemporary", "cunning", "cursory", "daunting", "data", "demeanor",
+        "dearth", "disdain", "diction", "discombobulate", "dogma", "docile",
+        "dubious", "duplicity"]
+        let HIGH_SCORE=0;
+        const minWord=1;
+        const maxWord=70;
+
+        let bestScore=document.getElementById("best-score");
+        let currScore=document.getElementById("curr-score");
+        let timeLeft=document.getElementById("timer");
+        let randomWord=document.getElementById("random-word");
+        let inputWord=document.getElementById("input-word");
+        let output=document.getElementById("outputResult");
+        currScore.innerText=0;
+
+        // const prev_maxScore=parseInt(bestScore.innerText);
+
+        timeLeft.innerText=30;
+        let remainingTime=15;
+
+        let intervalId;
+        function startTimer() {
+        if (typeof intervalId === 'undefined') {
+            intervalId = setInterval(() => {
+            console.log("Remaining Time: ", remainingTime);
+            remainingTime--;
+            timeLeft.innerText = ` ${remainingTime}`;
+            if (remainingTime <= 0) {
+                console.log('time out');
+                timeLeft.innerText = ' Time is Up';
+                timeLeft.classList.add('color:red');
+                inputWord.disabled = true;
+                clearInterval(intervalId);
+                if(HIGH_SCORE!=0){
+                    updateHighScore(HIGH_SCORE);
+                }
+            }
+            }, 1000);
+        }
+        }
+
+        inputWord.addEventListener('change',(e)=>{
+            word=e.target.value;
+            let correct=true;
+            if(word==randomWord.innerText){
+                remainingTime += 5;
+                timeLeft.innerText = ` ${remainingTime}`;
+                clearInterval(intervalId);
+                intervalId = setInterval(() => {
+                    console.log("Remaining Time: ", remainingTime);
+                    remainingTime--;
+                    timeLeft.innerText = ` ${remainingTime}`;
+                    if (remainingTime <= 0) {
+                        console.log('time out');
+                        timeLeft.innerText = ' Time is Up';
+                        timeLeft.style.color='red';
+                        inputWord.disabled = true;
+                        clearInterval(intervalId);
+                        if(HIGH_SCORE!=0){
+                            updateHighScore(HIGH_SCORE);
+                        }
+                    }
+                }, 1000);
+
+                // output.style.color='green';
+                output.style.cssText = 'color: green; font-weight: bold;';
+                output.innerText='Correct';                
+                // remainingTime=remainingTime+5;
+                currScore.innerText=parseInt(currScore.innerText)+1;
+                if (parseInt(currScore.innerText) > parseInt(bestScore.innerText)){
+                    bestScore.innerText=parseInt(currScore.innerText);
+                    HIGH_SCORE=parseInt(bestScore.innerText);
+                }
+                e.target.value='';
+                getRandomWord();
+            }else{
+                // output.style.color='red';
+                output.style.cssText = 'color: red; font-weight: bold;';
+                output.innerText='Incorrect';
+                e.target.value='';
+                correct=false;
+            }
+            // if(correct==false&&remainingTime!=0){
+            //     currScore.innerText=parseInt(currScore.innerText)-1;
+            // }
+        })
+        
+        const getRandomWord = () => {
+            const index = Math.floor(Math.random() * (maxWord - minWord) + minWord);
+            const _randomWord=random_words_list[index];
+            randomWord.innerText=_randomWord;
+            console.log("IN RANDOM");
+            startTimer();
+        }
+        
+        const updateHighScore = (score) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/update-score', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    console.log('Score updated successfully!');
+                }
+            };
+            xhr.send(JSON.stringify({ score: score }));
+        }
+
+        // const updateHighScore = (score) => {
+        //     fetch('/update-score', {
+        //         method: 'POST',
+        //         headers: {
+        //         'Content-Type': 'application/json'
+        //         },
+        //         body: JSON.stringify({ score: score })
+        //     })
+        //     .then(response => {
+        //         if (response.ok) {
+        //         console.log('Score updated successfully!');
+        //         } else {
+        //         console.error('Failed to update score:', response.status);
+        //         }
+        //     })
+        //     .catch(error => {
+        //         console.error('Error updating score:', error);
+        //     });
+        // }
+
+
+        const startGame = () => {
+            getRandomWord();
+        }
+        console.log("1,2,3");
+        startGame();
+
+
+
+    </script>
+
+
+</body>
+</html>
+
+<!-- 
+<div class="section-2">
+    <section>
+        <div class="d-flex justify-content-center ab-5">
+            <p><a href="/logout">EXIT GAME</a></p>
+        </div>
+    </section>
+</div>
+    -->
